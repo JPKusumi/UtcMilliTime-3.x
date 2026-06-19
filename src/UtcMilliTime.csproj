@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>UtcMilliTime</PackageId>
+    <Version>3.0.1</Version>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <Description>
+      UtcMilliTime for .NET 8.0 + .NET 10+ provides Unix time milliseconds (Int64) timestamps, similar to JavaScript's Date.now(), with cross-platform support and NTP synchronization.
+
+      Version 3 introduces thread safety across the Clock singleton and adds NowNonce() — a 12-byte value (8-byte timestamp + 4-byte entropy) designed for cryptographic use cases such as nonces in encryption and JWT handling.
+    </Description>
+
+    <PackageTags>time timestamp csharp clock ntp unix-timestamp milliseconds datetime utc now nonce</PackageTags>
+
+    <PackageReleaseNotes>
+      Version 3.0.1: Fixed package description on NuGet. Includes all v3.0.0 features (thread safety + NowNonce support).
+    </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

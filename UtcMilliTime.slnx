@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="runner/Runner.csproj" />
+  <Project Path="src/UtcMilliTime.csproj" />
+  <Project Path="test/UtcMilliTime.Tests.csproj" />
+</Solution>

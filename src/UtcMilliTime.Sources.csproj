@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IsPackable>true</IsPackable>
+
+    <PackageId>UtcMilliTime.Sources</PackageId>
+    <Version>3.0.0</Version>
+    <Description>Source-only package for UtcMilliTime</Description>
+    <PackageTags>time timestamp source-only utc now nonce</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="UtcMilliTime.cs" 
+             PackagePath="contentFiles\cs\netstandard2.0\" 
+             Pack="true"
+             BuildAction="Compile" />
+  </ItemGroup>
+
+</Project>

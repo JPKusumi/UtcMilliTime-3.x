@@ -1,0 +1,29 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Shared metadata across all packages -->
+    <Authors>John Kusumi</Authors>
+    <Company>JPKusumi</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JPKusumi/UtcMilliTime-3.x</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JPKusumi/UtcMilliTime-3.x</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Copyright>2019-2026</Copyright>
+    <Product>UtcMilliTime for .NET by JPKusumi</Product>
+
+    <!-- Default packaging settings -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- 
+    Individual .csproj files should override:
+      - PackageId
+      - Version
+      - Description
+      - PackageTags
+      - PackageReadmeFile (if different)
+  -->
+
+</Project>
