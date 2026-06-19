@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="CHANGELOG.md" />
+  </Folder>
   <Project Path="runner/Runner.csproj" />
   <Project Path="src/UtcMilliTime.csproj" />
   <Project Path="src/UtcMilliTime.Sources/UtcMilliTime.Sources.csproj" />
