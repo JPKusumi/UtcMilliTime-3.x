@@ -34,6 +34,12 @@ namespace UtcMilliTime
     }
     #endregion
     #region Supporting Types
+    /// <summary>
+    /// Defines the public contract for time-related functionality.
+    /// 
+    /// New methods added in v3 (NowNonce and related extractors) were implemented 
+    /// using default interface methods to avoid breaking changes for existing implementers.
+    /// </summary>
     public interface ITime
     {
         string DefaultServer { get; set; }
@@ -45,8 +51,19 @@ namespace UtcMilliTime
         long Skew { get; }
         bool SuppressNetworkCalls { get; set; }
         bool Synchronized { get; }
+
         event EventHandler<NTPEventArgs>? NetworkTimeAcquired;
+
         Task SelfUpdateAsync(string ntpServerHostName = Constants.fallback_server);
+
+        byte[] NowNonce()
+            => throw new NotSupportedException("NowNonce() is not supported by this ITime implementation.");
+
+        long TimestampFromNowNonce(byte[] nonce)
+            => throw new NotSupportedException("TimestampFromNowNonce() is not supported by this ITime implementation.");
+
+        uint EntropyFromNowNonce(byte[] nonce)
+            => throw new NotSupportedException("EntropyFromNowNonce() is not supported by this ITime implementation.");
     }
     public class NTPCallState
     {

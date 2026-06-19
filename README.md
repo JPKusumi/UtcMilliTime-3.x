@@ -27,7 +27,7 @@ UtcMilliTime provides `Int64` timestamps (milliseconds since 1/1/1970 UTC). It i
 ## Installation
 
 ```bash
-dotnet add package UtcMilliTime
+dotnet add package UtcMilliTime --version 3.0.2
 ```
 
 ## Basic Usage
