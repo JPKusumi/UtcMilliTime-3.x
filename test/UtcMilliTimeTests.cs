@@ -1,6 +1,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
+using System.Threading;
 using UtcMilliTime;
 using Xunit;
 
@@ -258,6 +259,205 @@ namespace UtcMilliTime.Tests
         public void SubtractDays_Negative_Throws()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => 0L.SubtractDays(-1));
+        }
+
+        #endregion
+
+        #region TestClock Tests
+
+        public class TestClockTests
+        {
+            [Fact]
+            public void TestClock_DefaultConstructor_StartsAtZero()
+            {
+                var clock = new TestClock();
+                Assert.Equal(0, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_Constructor_SetsInitialTime()
+            {
+                var clock = new TestClock(1_700_000_000_000);
+                Assert.Equal(1_700_000_000_000, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_FromCurrentTime_UsesRealTime()
+            {
+                long before = Clock.Time.Now;
+                var clock = TestClock.FromCurrentTime();
+                long after = Clock.Time.Now;
+
+                Assert.True(clock.Now >= before - 2000 && clock.Now <= after + 2000);
+            }
+
+            [Fact]
+            public void TestClock_SetTime_UpdatesNow()
+            {
+                var clock = new TestClock();
+                clock.SetTime(1_234_567_890_000);
+                Assert.Equal(1_234_567_890_000, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_AdvanceMilliseconds_IncreasesTimeCorrectly()
+            {
+                var clock = new TestClock(1_000_000_000_000);
+                clock.AdvanceMilliseconds(7500);
+                Assert.Equal(1_000_000_007_500, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_Advance_WithTimeSpan_Works()
+            {
+                var clock = new TestClock(1_000_000_000_000);
+                clock.Advance(TimeSpan.FromMinutes(3));
+                Assert.Equal(1_000_000_000_000 + 3 * 60 * 1000, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_AdvanceSeconds_Minutes_Hours_Work()
+            {
+                var clock = new TestClock(1_000_000_000_000);
+
+                clock.AdvanceSeconds(45);
+                Assert.Equal(1_000_000_000_000 + 45_000, clock.Now);
+
+                clock.AdvanceMinutes(2);
+                Assert.Equal(1_000_000_000_000 + 45_000 + 120_000, clock.Now);
+
+                clock.AdvanceHours(1);
+                Assert.Equal(1_000_000_000_000 + 45_000 + 120_000 + 3_600_000, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_AdvanceDays_Works()
+            {
+                var clock = new TestClock(1_700_000_000_000_000);
+                long delta = 5L * 24 * 60 * 60 * 1000;
+                clock.AdvanceDays(5);
+                Assert.Equal(1_700_000_000_000_000 + delta, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_AdvanceWeeks_Works()
+            {
+                var clock = new TestClock(1_700_000_000_000_000);
+                clock.AdvanceWeeks(3);
+
+                long expectedDelta = 3L * 7 * 24 * 60 * 60 * 1000;
+                Assert.Equal(1_700_000_000_000_000 + expectedDelta, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_AdvanceMonths_UsesApproximate30Days()
+            {
+                var clock = new TestClock(1_700_000_000_000_000);
+                long delta = 2L * 30 * 24 * 60 * 60 * 1000;
+                clock.AdvanceMonths(2);
+                Assert.Equal(1_700_000_000_000_000 + delta, clock.Now);
+            }
+
+            [Fact]
+            public void TestClock_AdvanceYears_UsesApproximate365Days()
+            {
+                var clock = new TestClock(1_700_000_000_000_000);
+                long delta = 1L * 365 * 24 * 60 * 60 * 1000;
+                clock.AdvanceYears(1);
+                Assert.Equal(1_700_000_000_000_000 + delta, clock.Now);
+            }
+            [Fact]
+            public void TestClock_AdvanceDays_Months_Years_Negative_Throws()
+            {
+                var clock = new TestClock();
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => clock.AdvanceDays(-1));
+                Assert.Throws<ArgumentOutOfRangeException>(() => clock.AdvanceMonths(-1));
+                Assert.Throws<ArgumentOutOfRangeException>(() => clock.AdvanceYears(-1));
+            }
+
+            [Fact]
+            public void TestClock_Advance_NegativeValue_ThrowsArgumentOutOfRangeException()
+            {
+                var clock = new TestClock();
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => clock.AdvanceMilliseconds(-1));
+                Assert.Throws<ArgumentOutOfRangeException>(() => clock.Advance(TimeSpan.FromSeconds(-5)));
+            }
+
+            [Fact]
+            public void TestClock_Now_DoesNotChangeWithoutExplicitAdvance()
+            {
+                var clock = new TestClock(5_000_000_000_000);
+                long first = clock.Now;
+                Thread.Sleep(30);
+                long second = clock.Now;
+
+                Assert.Equal(first, second);
+            }
+
+            [Fact]
+            public void TestClock_NowNonce_IsStable_WhenTimeDoesNotChange()
+            {
+                var clock = new TestClock(9_000_000_000_000);
+                byte[] nonce1 = clock.NowNonce();
+                byte[] nonce2 = clock.NowNonce();
+
+                Assert.Equal(nonce1, nonce2);
+            }
+
+            [Fact]
+            public void TestClock_NowNonce_Changes_AfterTimeAdvance()
+            {
+                var clock = new TestClock(9_000_000_000_000);
+                byte[] before = clock.NowNonce();
+
+                clock.AdvanceMilliseconds(100);
+                byte[] after = clock.NowNonce();
+
+                Assert.NotEqual(before, after);
+            }
+
+            [Fact]
+            public void TestClock_SuppressNetworkCalls_DefaultsToTrue_AndIsMutable()
+            {
+                var clock = new TestClock();
+                Assert.True(clock.SuppressNetworkCalls);
+
+                clock.SuppressNetworkCalls = false;
+                Assert.False(clock.SuppressNetworkCalls);
+            }
+
+            [Fact]
+            public void TestClock_RaiseNetworkTimeAcquired_RaisesEventWithCorrectData()
+            {
+                var clock = new TestClock();
+                NTPEventArgs? captured = null;
+
+                clock.NetworkTimeAcquired += (_, args) => captured = args;
+
+                clock.RaiseNetworkTimeAcquired("ntp.example.com", skew: 22, latency: 67);
+
+                Assert.NotNull(captured);
+                Assert.Equal("ntp.example.com", captured.Server);
+                Assert.Equal(22, captured.Skew);
+                Assert.Equal(67, captured.Latency);
+            }
+
+            [Fact]
+            public void TestClock_RaiseNetworkTimeAcquired_AcceptsCustomArgs()
+            {
+                var clock = new TestClock();
+                var args = new NTPEventArgs("time.cloudflare.com", 5, 33);
+                NTPEventArgs? received = null;
+
+                clock.NetworkTimeAcquired += (_, e) => received = e;
+
+                clock.RaiseNetworkTimeAcquired(args);
+
+                Assert.NotNull(received);
+                Assert.Equal("time.cloudflare.com", received.Server);
+            }
         }
 
         #endregion

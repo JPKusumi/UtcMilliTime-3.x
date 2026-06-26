@@ -592,4 +592,174 @@ namespace UtcMilliTime
     }
 #pragma warning restore RECS0165
     #endregion
+    #region TestClock
+    /// <summary>
+    /// A fully controllable clock for unit testing.
+    /// Time only advances when explicitly told to via Advance() methods.
+    /// Non-time behavior matches the real Clock as closely as possible.
+    /// </summary>
+    public sealed class TestClock : ITime
+    {
+        private long _currentTime;
+        private bool _suppressNetworkCalls = true;
+        private readonly object _lock = new();
+
+        public TestClock(long initialTime = 0)
+        {
+            _currentTime = initialTime;
+        }
+
+        /// <summary>
+        /// Creates a TestClock initialized to the current real time.
+        /// </summary>
+        public static TestClock FromCurrentTime() => new(Clock.Time.Now);
+
+        // ==================== Time Control ====================
+
+        public void SetTime(long timestamp)
+        {
+            lock (_lock) { _currentTime = timestamp; }
+        }
+
+        public void Advance(TimeSpan time)
+        {
+            if (time < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(time), "Cannot advance by a negative amount.");
+
+            lock (_lock) { _currentTime += (long)time.TotalMilliseconds; }
+        }
+
+        public void AdvanceMilliseconds(long milliseconds)
+        {
+            if (milliseconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(milliseconds), "Cannot advance by a negative amount.");
+
+            lock (_lock) { _currentTime += milliseconds; }
+        }
+
+        public void AdvanceSeconds(int seconds) => AdvanceMilliseconds(seconds * 1000L);
+        public void AdvanceMinutes(int minutes) => AdvanceMilliseconds(minutes * 60L * 1000L);
+        public void AdvanceHours(int hours) => AdvanceMilliseconds(hours * 3600L * 1000L);
+
+        /// <summary>
+        /// Advances the clock by the specified number of days.
+        /// </summary>
+        public void AdvanceDays(int days)
+        {
+            if (days < 0)
+                throw new ArgumentOutOfRangeException(nameof(days), "Cannot advance by a negative amount.");
+
+            AdvanceMilliseconds(days * 24L * 60 * 60 * 1000);
+        }
+
+        /// <summary>
+        /// Advances the clock by the specified number of weeks.
+        /// </summary>
+        public void AdvanceWeeks(int weeks)
+        {
+            if (weeks < 0)
+                throw new ArgumentOutOfRangeException(nameof(weeks), "Cannot advance by a negative amount.");
+
+            AdvanceDays(weeks * 7);
+        }
+
+        /// <summary>
+        /// Advances the clock by the specified number of months (approximate).
+        /// Uses 30 days per month for simplicity.
+        /// </summary>
+        public void AdvanceMonths(int months)
+        {
+            if (months < 0)
+                throw new ArgumentOutOfRangeException(nameof(months), "Cannot advance by a negative amount.");
+
+            AdvanceDays(months * 30);
+        }
+
+        /// <summary>
+        /// Advances the clock by the specified number of years (approximate).
+        /// Uses 365 days per year for simplicity.
+        /// </summary>
+        public void AdvanceYears(int years)
+        {
+            if (years < 0)
+                throw new ArgumentOutOfRangeException(nameof(years), "Cannot advance by a negative amount.");
+
+            AdvanceDays(years * 365);
+        }
+
+        // ==================== ITime Implementation ====================
+
+        public long Now
+        {
+            get { lock (_lock) ; return _currentTime; }
+        }
+
+        public byte[] NowNonce()
+        {
+            long timestamp;
+            lock (_lock) { timestamp = _currentTime; }
+
+            byte[] nonce = new byte[12];
+
+            // Timestamp portion (little-endian)
+            for (int i = 0; i < 8; i++)
+                nonce[i] = (byte)(timestamp >> (i * 8));
+
+            // Deterministic entropy portion for test reproducibility
+            int counter = (int)(timestamp & 0xFFFFFFFF);
+            for (int i = 0; i < 4; i++)
+                nonce[8 + i] = (byte)(counter >> (i * 8));
+
+            return nonce;
+        }
+
+        // ==================== Behavioral Properties ====================
+
+        public bool SuppressNetworkCalls
+        {
+            get => _suppressNetworkCalls;
+            set => _suppressNetworkCalls = value;
+        }
+
+        public string DefaultServer { get; set; } = Constants.fallback_server;
+
+        public bool Initialized => true;
+        public bool Synchronized => true;
+        public long Skew => 0;
+        public long DeviceBootTime => 0;
+        public long DeviceUpTime => 0;
+        public long DeviceUtcNow => Now;
+
+        public event EventHandler<NTPEventArgs>? NetworkTimeAcquired;
+
+        public Task SelfUpdateAsync(string ntpServerHostName = Constants.fallback_server)
+        {
+            // Intentionally a no-op to avoid real network calls during tests
+            return Task.CompletedTask;
+        }
+
+        // ==================== Test Helper ====================
+
+        /// <summary>
+        /// Manually raises the NetworkTimeAcquired event.
+        /// Useful for testing subscribers to this event.
+        /// </summary>
+        /// <param name="server">The NTP server name.</param>
+        /// <param name="latency">Round-trip latency in milliseconds.</param>
+        /// <param name="skew">Clock skew in milliseconds.</param>
+        public void RaiseNetworkTimeAcquired(string server, long latency = 0, long skew = 0)
+        {
+            var args = new NTPEventArgs(server, latency, skew);
+            NetworkTimeAcquired?.Invoke(this, args);
+        }
+
+        /// <summary>
+        /// Raises the NetworkTimeAcquired event using a pre-constructed NTPEventArgs instance.
+        /// </summary>
+        public void RaiseNetworkTimeAcquired(NTPEventArgs args)
+        {
+            NetworkTimeAcquired?.Invoke(this, args);
+        }
+    }
+    #endregion
 }

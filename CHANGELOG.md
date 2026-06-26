@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-06-26
+
+### Added
+- `TestClock` — a fully controllable implementation of `ITime` designed for unit testing. Time only advances when explicitly instructed via `SetTime()` or the `Advance*()` methods (including `Advance(TimeSpan)`, `AdvanceDays`, `AdvanceWeeks`, `AdvanceMonths`, and `AdvanceYears`).
+- `RaiseNetworkTimeAcquired(...)` overloads on `TestClock` to manually simulate NTP synchronization events in tests.
+
+### Changed
+- Significantly improved testability for time-dependent logic (timeouts, expirations, retries, token lifetimes, scheduled tasks, etc.).
 ## [3.0.2] - 2026-06-19
 
 ### Changed

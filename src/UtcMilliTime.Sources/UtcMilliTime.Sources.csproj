@@ -1,25 +1,44 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IsPackable>true</IsPackable>
-    <SuppressDependenciesWarning>true</SuppressDependenciesWarning>
-
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <LangVersion>latest</LangVersion>
-
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>UtcMilliTime.Sources</PackageId>
-    <Version>3.0.2</Version>
-    <Description>Source-only package for UtcMilliTime</Description>
-    <PackageTags>time timestamp source-only utc now nonce</PackageTags>
+    <Version>3.1.0</Version>
+    <Authors>John Kusumi</Authors>
+    <Company>JPKusumi</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JPKusumi/UtcMilliTime-3.x</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JPKusumi/UtcMilliTime-3.x</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Description>
+      Source-only package for UtcMilliTime v3.1. Includes the complete single-file implementation with TestClock for unit testing and customization.
+    </Description>
+    <PackageTags>
+      time timestamp source-only utcmillitime testclock
+    </PackageTags>
+    <PackageReleaseNotes>
+      Version 3.1.0:
+      - Added TestClock for unit testing
+      - Added AdvanceDays, AdvanceWeeks, AdvanceMonths, and AdvanceYears
+      - Added RaiseNetworkTimeAcquired support
+
+      See CHANGELOG.md for full details.
+    </PackageReleaseNotes>
+    <Copyright>2019-2026</Copyright>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <!-- Fix for Nullable + netstandard2.0 -->
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- Point to the actual location of UtcMilliTime.cs (one level up) -->
   <ItemGroup>
-    <Content Include="..\UtcMilliTime.cs" 
-             PackagePath="contentFiles\cs\netstandard2.0\" 
-             Pack="true"
-             BuildAction="Compile" />
+    <Content Include="..\UtcMilliTime.cs"
+             PackagePath="contentFiles\cs\netstandard2.0\"
+             Pack="true" />
   </ItemGroup>
 
 </Project>

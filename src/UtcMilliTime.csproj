@@ -4,20 +4,35 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>UtcMilliTime</PackageId>
-    <Version>3.0.2</Version>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-
+    <Version>3.1.0</Version>
+    <Authors>John Kusumi</Authors>
+    <Company>JPKusumi</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JPKusumi/UtcMilliTime-3.x</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JPKusumi/UtcMilliTime-3.x</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <Description>
-      UtcMilliTime for .NET 8.0 + .NET 10+ provides Unix time milliseconds (Int64) timestamps, similar to JavaScript's Date.now(), with cross-platform support and NTP synchronization.
-
-      Version 3 introduces thread safety across the Clock singleton and adds NowNonce() — a 12-byte value (8-byte timestamp + 4-byte entropy) useful for cryptographic operations.
+      UtcMilliTime provides reliable Unix millisecond timestamps (Int64) with built-in NTP synchronization and high-resolution monotonic time.
+      Version 3.1 introduces TestClock — a fully controllable clock for deterministic unit testing of time-dependent logic.
     </Description>
-
-    <PackageTags>time timestamp csharp clock ntp unix-timestamp milliseconds datetime utc now nonce</PackageTags>
-
+    <PackageTags>
+      time timestamp clock ntp utcmillitime testclock unit-testing monotonic high-resolution
+    </PackageTags>
     <PackageReleaseNotes>
-      Version 3.0.2: Updated ITime interface to include NowNonce() and related methods using default interface methods (non-breaking change).
+      Version 3.1.0:
+      - Added TestClock for unit testing (implements ITime)
+      - Added AdvanceDays, AdvanceWeeks, AdvanceMonths, and AdvanceYears methods
+      - Added RaiseNetworkTimeAcquired methods to simulate NTP events in tests
+      - Improved testability for time-dependent code
+
+      See CHANGELOG.md for full details.
     </PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Copyright>2019-2026</Copyright>
+    <Nullable>enable</Nullable>
+
+    <!-- Fix for duplicate assembly attributes -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
